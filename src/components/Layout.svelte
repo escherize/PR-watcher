@@ -1,40 +1,42 @@
 <script>
+  import { onMount } from 'svelte';
   import { Modal, TextInput } from "carbon-components-svelte";
-  import { userStore, tokenStore } from "@/stores/auth";
-  let userValue;
-  userStore.subscribe(value => {userValue = value});
-  let isAuthorized = userValue == null;
+  import { tokenStore, userStore } from "@/stores/auth";
+  import { fetchGHApi } from "@/lib/api";
 
+  let tokenValue, userValue;
+  tokenStore.subscribe(value => {tokenValue = value});
+  userStore.subscribe(value => {userValue = value});
+
+  let shouldAskForToken = !tokenValue;
   let tokenInputValue = null;
+
   async function onSubmitToken(token) {
-    const resp = await fetch("https://api.github.com/user", {
-      headers: {
-        'Authorization': 'Bearer ' + token,
-      }
-    });
+    const resp = await fetchGHApi("user", {}, token);
     if (resp.status == 200 ) {
       userStore.set(resp);
-      tokenStore.set(tokenInputValue);
-
-      var apiUrl = 'https://api.github.com/repos/metabase/metabase/pulls';
-
-      fetch(apiUrl, {
-        headers: {
-          'Authorization': 'Bearer ' + token
-        }
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log("DATA", data);
-
-      })
+      tokenStore.set(token);
     }
   }
+
+  onMount(async () => {
+    // if token exists in local storage, fetch the user
+    if (tokenValue && !userValue) {
+      const resp = await fetchGHApi("user", {}, tokenValue);
+      if (resp.status == 200 ) {
+        tokenStore.set(tokenValue);
+        userStore.set(resp);
+      } else {
+        tokenStore.set("");
+        userStore.set(null);
+      }
+    }
+  })
 </script>
 
 <div id="body">
   <Modal
-    bind:open={isAuthorized}
+    bind:open={shouldAskForToken}
     primaryButtonText={"Submit"}
     on:submit={() => {onSubmitToken(tokenInputValue)}}
     >

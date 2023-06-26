@@ -2,6 +2,8 @@
   import { path, prefs } from 'svelte-pathfinder';
   import routes from '@/routes';
 
+  //import "carbon-components-svelte/css/white.css";
+
     // Disable side effects to only keep history in browser memory.
   prefs.sideEffect = false;
 

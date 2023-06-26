@@ -1,0 +1,23 @@
+{
+  "name": "pr-watcher",
+  "author": "qnkhuat",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "svelte-pathfinder": "^3.4.0"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^2.4.2",
+    "postcss": "^8.4.21",
+    "postcss-load-config": "^4.0.1",
+    "svelte": "^3.55.1",
+    "vite": "^4.1.4",
+    "vite-plugin-singlefile": "^0.13.3"
+  },
+  "type": "module"
+}

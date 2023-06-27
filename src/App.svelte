@@ -12,7 +12,7 @@
   tokenStore.subscribe(value => {tokenValue = value});
   userStore.subscribe(value => {userValue = value});
 
-  let shouldAskForToken = !tokenValue;
+  $: shouldAskForToken = !tokenValue;
   let tokenInputValue = null;
 
   function onSubmitToken(token) {

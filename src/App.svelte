@@ -27,7 +27,7 @@
       });
   }
 
-  onMount( () => {
+  onMount(() => {
     // if token exists in local storage, fetch the user
     if (tokenValue && !userValue) {
       getGHApi("user", {}, tokenValue)
@@ -41,7 +41,6 @@
           tokenStore.set("");
           userStore.set(null);
         });
-
     }
   })
 

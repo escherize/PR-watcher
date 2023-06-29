@@ -15,6 +15,7 @@
       .then(resp => resp.json())
       .then(data => pulls = data.items);
   }
+
 </script>
 
 <LocalStorage bind:value={repoInputValue} />
@@ -31,7 +32,10 @@
     </Button>
 
     {#each pulls as pull (pull.id)}
-      <PullRequest pull={pull}/>
+      {#if pull.pull_request.html_url == "https://github.com/metabase/metabase/pull/31540"}
+      <PullRequest repo={repoInputValue} pull={pull}/>
+      <hr>
+      {/if}
     {/each}
   </div>
 </Layout>

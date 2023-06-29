@@ -1,6 +1,9 @@
 <script>
+  import { Content } from "carbon-components-svelte";
 </script>
 
 <div id="layout">
-  <slot></slot>
+  <Content>
+    <slot></slot>
+  </Content>
 </div>

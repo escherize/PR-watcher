@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from "svelte";
   import { Button, TextInput, LocalStorage } from "carbon-components-svelte";
 
   import PullRequest from "@/components/PullRequest.svelte";
@@ -16,6 +17,10 @@
       .then(data => pulls = data.items);
   }
 
+  onMount(() => {
+    if (repoInputValue) loadPullRequests();
+  })
+
 </script>
 
 <LocalStorage bind:value={repoInputValue} />
@@ -31,11 +36,19 @@
       Load
     </Button>
 
+    <div id="pull-requests">
     {#each pulls as pull (pull.id)}
       {#if pull.pull_request.html_url == "https://github.com/metabase/metabase/pull/31540"}
       <PullRequest repo={repoInputValue} pull={pull}/>
-      <hr>
       {/if}
     {/each}
+    </div>
   </div>
 </Layout>
+
+<style>
+  #pull-requests {
+    border-top: 1px solid #e1e4e8;
+    margin-top: 20px;
+  }
+</style>

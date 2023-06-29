@@ -1,43 +1,37 @@
 <script>
-  import { onMount } from "svelte";
-  import { Button, TextInput } from "carbon-components-svelte";
+  import { Button, TextInput, LocalStorage } from "carbon-components-svelte";
 
+  import PullRequest from "@/components/PullRequest.svelte";
   import Layout from "@/components/Layout.svelte";
-  import { getGHApi } from "@/lib/api";
   import { userStore } from "@/stores/auth";
-
-  let userValue;
-  userStore.subscribe(value => userValue = value);
-
-  let pulls = [];
+  import { getGHApi } from "@/lib/api";
 
   let repoInputValue = "";
+  let pulls = [];
 
-  async function loadPullRequests() {
-    let resp = await getGHApi("search/issues",
-      {q: `author:${userValue.login} type:pr repo:${repoInputValue} state:open`,
-        per_page: 3}).then(resp => resp.json());
-    pulls = resp.items;
-    console.log("PULLS", pulls)
-
-    let pull = pulls[pulls.length - 1];
-    let pullDetail = await getGHApi(pull.pull_request.url).then(resp => resp.json());
-    console.log("PULL detials", pullDetail);
-    let wfs = await getGHApi(`repos/${repoInputValue}/actions/runs`, {head_sha: pullDetail.head.sha}).then(resp => resp.json());
-    console.log("Workflows", wfs);
-
+  function loadPullRequests() {
+    getGHApi("search/issues",
+      {q: `author:${$userStore.login} type:pr repo:${repoInputValue} state:open`})
+      .then(resp => resp.json())
+      .then(data => pulls = data.items);
   }
 </script>
 
+<LocalStorage bind:value={repoInputValue} />
+
 <Layout>
-  <div class="">
+  <div>
     <TextInput
       labelText="Repo"
       placeholder="metabase/metabase"
       bind:value={repoInputValue}/>
+
     <Button on:click={loadPullRequests}>
       Load
     </Button>
 
+    {#each pulls as pull (pull.id)}
+      <PullRequest pull={pull}/>
+    {/each}
   </div>
 </Layout>

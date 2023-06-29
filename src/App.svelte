@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { path, prefs } from 'svelte-pathfinder';
   import { Modal, TextInput } from "carbon-components-svelte";
-  import "carbon-components-svelte/css/white.css";
+  import "carbon-components-svelte/css/g90.css";
 
   import routes from '@/routes';
   import { tokenStore, userStore } from "@/stores/auth";
@@ -50,8 +50,8 @@
   $: page = routes[$path] || routes['/']
 </script>
 
-
 <Modal
+  modalHeading="Github Personal Access Token"
   bind:open={shouldAskForToken}
   primaryButtonText={"Submit"}
   on:submit={() => {onSubmitToken(tokenInputValue)}}

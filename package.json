@@ -16,6 +16,7 @@
     "carbon-components-svelte": "^0.76.0",
     "postcss": "^8.4.21",
     "postcss-load-config": "^4.0.1",
+    "sass": "^1.63.6",
     "svelte": "^3.55.1",
     "vite": "^4.1.4",
     "vite-plugin-singlefile": "^0.13.3"

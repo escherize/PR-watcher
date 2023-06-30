@@ -25,7 +25,7 @@
       [null, "in progress"]
     ]
 
-  const failedStatuses = [ "failure", "cancelled", "timed_out", "startup_failure"];
+  const failedStatuses = ["failure", "cancelled", "timed_out", "startup_failure"];
 
   //------------------------ states ------------------------//
   let workflowRuns = [];
@@ -34,11 +34,10 @@
   let statusMap = {};
   let statusText = "";
 
-
   async function  rerunFailedJob(runId) {
     // This is a bit weird, to re-run a failed job, we just need to provide one run-id
     // in that job, not the job_id itself
-    await postGHApi(`repos/${repo}/actions/runs/${runId}/re-run-failed-jobs`);
+    await postGHApi(`repos/${repo}/actions/runs/${runId}/rerun-failed-jobs`);
     // update so that the status text reflect this
     workflowJobs = workflowJobs.map(job => {
       if (job.run_id == runId && failedStatuses.includes(job.conclusion)) {
@@ -50,8 +49,9 @@
   }
 
   function rerunFailedJobs() {
-    const failedJobs = workflowJobs.filter(job => failedStatuses.includes(job.conclusion)).group((job => job.run_id));
+    const failedJobs = workflowJobs.filter(job => failedStatuses.includes(job.conclusion));
     const failedRuns = new Set(failedJobs.map(job => job.run_id));
+    console.log("failed runs", failedRuns);
     failedRuns.forEach(runId => rerunFailedJob(runId));
   }
 
@@ -90,8 +90,6 @@
       .then(data => pullDetail = data);
   })
 
-  $: console.log("jobs", workflowJobs);
-
 </script>
 
 <div class="pull-request">
@@ -102,17 +100,18 @@
 
   <div class="actions">
     <Toggle class="action-item" labelText="Watch" labelA="" labelB=""/>
-    <Button class="action-item" >Re-run failed jobs</Button>
+    <Button
+      class="action-item"
+      on:click={() => rerunFailedJobs()}
+      disabled={!Object.keys(statusMap).some((status) => failedStatuses.includes(status))}>Re-run failed jobs</Button>
   </div>
 </div>
 
 <style lang="scss">
-
   .pull-request {
     display: flex;
     border-bottom: 1px solid #e1e4e8;
     justify-content: space-between;
-    padding-right: 40px;
       .info {
         padding: 10px;
           .title {
@@ -129,6 +128,14 @@
       }
       .actions {
         display: flex;
+        align-items: center;
+          p {
+            color: #3d70b2;
+            cursor: pointer;
+          }
+          .action-item {
+            padding-left: 10px;
+          }
 
       }
   }

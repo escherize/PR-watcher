@@ -65,3 +65,12 @@
     <svelte:component this={page} />
   {/if}
 </div>
+
+<style>
+  /* global styles go here */
+  :global(.notification) {
+		position: absolute;
+		left: 0;
+		bottom: 0;
+	}
+</style>

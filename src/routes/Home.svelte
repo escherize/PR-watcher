@@ -12,7 +12,6 @@
   let watchingPullIds = {};
   let watchInterval = 10000;
 
-  console.log("Userstore", $userStore);
   function loadPullRequests() {
     getGHApi("search/issues",
       {q: `author:${$userStore.login} type:pr repo:${repoInputValue} state:open`})
@@ -25,6 +24,20 @@
     else delete watchingPullIds[pullId]
   }
 
+  function itemToStringWatchDropdown(item) {
+    const value = item.text / 1000; // in seconds
+    const minutes = Math.floor(value / 60);
+    const seconds = (value - minutes * 60);
+    let components = [];
+    if (minutes > 0) {
+      components.push(`${minutes} minutes`);
+    }
+    if (seconds > 0){
+      components.push(`${seconds} seconds`);
+    }
+    return components.join(", ");
+  }
+
   onMount(() => {
     if (repoInputValue) loadPullRequests();
   })
@@ -32,28 +45,20 @@
 </script>
 
 <LocalStorage key="repo-input-value" bind:value={repoInputValue} />
-<LocalStorage key="watching-pull-ids" bind:value={watchingPullIds} />
+<!--<LocalStorage key="watching-pull-ids" bind:value={watchingPullIds} />-->
 
 <Layout>
   <Dropdown
-    itemToString={item => {
-    console.log('item', item);
-    const seconds = item / 1000;
-    const minutes = seconds / 60;
-    let string;
-    if (minutes > 0) {
-    string = `${minutes} minutes` + (seconds > 0) ? `, ${seconds} seconds` : "";
-    } else {
-    string = `${seconds} seconds`;
-    }
-    console.log("STRING", string);
-    return string;
-    }}
+    titleText="Watch PR internval"
+    selectedId="2"
+    itemToString={itemToStringWatchDropdown}
+    on:select={(e => {
+    watchInterval = parseInt(e.detail.selectedItem.text)})}
     items={[
-    {id: "0", text: "5000"},
-    {id: "1", text: "10000"},
-    {id: "2", text: "30000"},
-    {id: "3", text: "60000"},
+    {id: "0", text: "30000"},
+    {id: "1", text: "60000"},
+    {id: "2", text: "120000"},
+    {id: "3", text: "300000"},
     ]}
 />
   <div>
@@ -71,6 +76,7 @@
         {#if pull.pull_request.html_url == "https://github.com/metabase/metabase/pull/31540"}
           <PullRequest repo={repoInputValue} pull={pull}
                        watch={Boolean(watchingPullIds[pull.id])}
+                       watchInterval={watchInterval}
                        onToggleWatch={onToggleWatch}/>
         {/if}
       {/each}

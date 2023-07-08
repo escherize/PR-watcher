@@ -11,6 +11,7 @@
   export let pull;
   export let watch;
   export let onToggleWatch;
+  export let watchInterval;
 
   const jobStatuses = [
     ["skipped", "skipped"],
@@ -33,7 +34,7 @@
   let pullDetail = null;
   let statusMap = {};
   let statusText = "";
-  let watchInterval = null;
+  let watchIntervalHandler = null;
 
   async function rerunFailedJob(runId) {
     // This is a bit weird, to re-run a failed job, we just need to provide one run-id
@@ -97,9 +98,11 @@
       });
   })
 
-  $: if (watch) {
-    //setInterval()
-
+  $: if (watch && watchInterval) {
+    if (watchIntervalHandler) clearInterval(watchIntervalHandler);
+    watchIntervalHandler = setInterval(() => {
+      refreshJobs(workflowRuns);
+    }, watchInterval);
   }
 
 </script>
@@ -112,17 +115,17 @@
 
   <div class="actions">
     <Toggle class="action-item"
-            bind:watch
+            bind:toggled={watch}
             on:toggle={(e) => {
             if (onToggleWatch) {
             onToggleWatch(e.detail.toggled, pull.id);
             watch = e.detail.toggled;
             }}}
-      labelText="Watch" labelA="" labelB=""/>
-    <Button
-      class="action-item"
-      on:click={() => rerunFailedJobs(workflowJobs)}
-      disabled={!Object.keys(statusMap).some((status) => failedStatuses.includes(status))}>Re-run failed jobs</Button>
+            labelText="Watch" labelA="" labelB=""/>
+            <Button
+              class="action-item"
+              on:click={() => rerunFailedJobs(workflowJobs)}
+              disabled={!Object.keys(statusMap).some((status) => failedStatuses.includes(status))}>Re-run failed jobs</Button>
   </div>
 </div>
 

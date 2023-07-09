@@ -13,20 +13,20 @@
   export let onToggleWatch;
   export let watchInterval;
 
-  const jobStatuses = [
-    ["skipped", "skipped"],
-    ["success", "successful"],
-    ["failure", "failing checks"],
-    ["cancelled", "cancelled"],
-    ["action_required", "required actions"],
-    ["timed_out", "timed out"],
-    ["neutral", "neutral"],
-    ["stale", "staled"],
-    ["startup_failure", "failed to start"],
-    [null, "in progress"]
-  ]
+  const JOB_STATUS_TO_TITLE = {
+    "skipped": "skipped",
+    "success": "successful",
+    "failure": "failing checks",
+    "cancelled": "cancelled",
+    "action_required": "required actions",
+    "timed_out": "timed out",
+    "neutral": "neutral",
+    "stale": "staled",
+    "startup_failure": "failed to start",
+    null: "in progress"
+  };
 
-  const failedStatuses = ["failure", "cancelled", "timed_out", "startup_failure"];
+  const FAILED_STATUES = ["failure", "cancelled", "timed_out", "startup_failure"];
 
   //------------------------ states ------------------------//
   let workflowRuns = [];
@@ -35,6 +35,7 @@
   let statusMap = {};
   let statusText = "";
   let watchIntervalHandler = null;
+  let showJobsDetailByStatus = null; // "failure" | "sucecss" | etc
 
   async function rerunFailedJob(runId) {
     // This is a bit weird, to re-run a failed job, we just need to provide one run-id
@@ -42,7 +43,7 @@
     await postGHApi(`repos/${repo}/actions/runs/${runId}/rerun-failed-jobs`);
     // update so that the status text reflect this
     workflowJobs = workflowJobs.map(job => {
-      if (job.run_id == runId && failedStatuses.includes(job.conclusion)) {
+      if (job.run_id == runId && FAILED_STATUES.includes(job.conclusion)) {
         job.status = "queued";
         job.conclusion = null;
       }
@@ -51,7 +52,7 @@
   }
 
   function rerunFailedJobs(jobs) {
-    const failedJobs = jobs.filter(job => failedStatuses.includes(job.conclusion));
+    const failedJobs = jobs.filter(job => FAILED_STATUES.includes(job.conclusion));
     const failedRuns = new Set(failedJobs.map(job => job.run_id));
     failedRuns.forEach(runId => rerunFailedJob(runId));
   }
@@ -69,12 +70,6 @@
           statusMap = jobs.map(job => job.conclusion).reduce(function (acc, curr) {
             return acc[curr] ? ++acc[curr] : acc[curr] = 1, acc
           }, {});
-          statusText = jobStatuses.map(jobStatus => {
-            let [status, title] = jobStatus
-            if (statusMap[status] > 0 ) {
-              return `${statusMap[status]} ${title}`
-            }
-          }).filter(Boolean).join(", ")
         });
     }
   }
@@ -105,60 +100,92 @@
     }, watchInterval);
   }
 
+  function statusOnClick(status) {
+    console.log("CLICK STAUTS", status);
+    showJobsDetailByStatus = status;
+  }
+
 </script>
 
 <div class="pull-request">
-  <div class="info">
-    <a class="title" href={pull.html_url}>{pull.title}</a>
-    <p class="status" >{statusText}</p>
+  <div class="info-and-title">
+    <div class="info">
+      <a class="title" href={pull.html_url}>{pull.title}</a>
+      <p class="status" >{statusText}</p>
+
+      {#each [...Object.entries(statusMap).entries()] as [index, [status, count]]}
+        <span class="status" on:click={() => statusOnClick(status)}>{count} {JOB_STATUS_TO_TITLE[status]}</span>
+        {#if (index != Object.keys(statusMap).length - 1 )}
+          <span>,&nbsp;</span>
+        {/if}
+      {/each}
+
+    </div>
+
+    <div class="actions">
+      <Toggle class="action-item"
+              bind:toggled={watch}
+              on:toggle={(e) => {
+              if (onToggleWatch) {
+              onToggleWatch(e.detail.toggled, pull.id);
+              watch = e.detail.toggled;
+              }}}
+              labelText="Watch" labelA="" labelB=""/>
+              <Button
+                class="action-item"
+                on:click={() => rerunFailedJobs(workflowJobs)}
+                disabled={!Object.keys(statusMap).some((status) => FAILED_STATUES.includes(status))}>Re-run failed jobs</Button>
+    </div>
+  </div>
+  <div class="job-details">
+    {#if showJobsDetailByStatus}
+      {#each workflowJobs.filter(job => job.conclusion == showJobsDetailByStatus) as job}
+        <a href={job.html_url}>{job.name}</a>
+      {/each}
+    {/if}
   </div>
 
-  <div class="actions">
-    <Toggle class="action-item"
-            bind:toggled={watch}
-            on:toggle={(e) => {
-            if (onToggleWatch) {
-            onToggleWatch(e.detail.toggled, pull.id);
-            watch = e.detail.toggled;
-            }}}
-            labelText="Watch" labelA="" labelB=""/>
-            <Button
-              class="action-item"
-              on:click={() => rerunFailedJobs(workflowJobs)}
-              disabled={!Object.keys(statusMap).some((status) => failedStatuses.includes(status))}>Re-run failed jobs</Button>
-  </div>
 </div>
 
 <style lang="scss">
   .pull-request {
-    display: flex;
     border-bottom: 1px solid #e1e4e8;
-    justify-content: space-between;
-      .info {
-        padding: 10px;
-          .title {
-            display: block;
-            font-size: 1.15em;
-            color: #3d70b2;
-            margin-bottom: 5px;
-            text-decoration: none;
+      .info-and-title {
+        display: flex;
+        justify-content: space-between;
+          .info {
+            padding: 10px;
+              .title {
+                display: block;
+                font-size: 1.15em;
+                color: #3d70b2;
+                margin-bottom: 5px;
+                text-decoration: none;
+              }
+              .status  {
+                font-size: 0.95em;
+                color: #586069;
+              }
           }
-          .status  {
-            font-size: 0.95em;
-            color: #586069;
+          .actions {
+            display: flex;
+            align-items: center;
+              p {
+                color: #3d70b2;
+                cursor: pointer;
+              }
+              .action-item {
+                padding-left: 10px;
+              }
           }
       }
-      .actions {
-        display: flex;
-        align-items: center;
-          p {
-            color: #3d70b2;
-            cursor: pointer;
+      .job-details {
+        padding-top: 20px;
+          a {
+            display: block;
+            line-height: 1.4em;
+            text-decoration: none;
           }
-          .action-item {
-            padding-left: 10px;
-          }
-
       }
   }
 </style>

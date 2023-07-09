@@ -102,7 +102,7 @@
 
   function statusOnClick(status) {
     console.log("CLICK STAUTS", status);
-    showJobsDetailByStatus = status;
+
   }
 
 </script>
@@ -114,7 +114,7 @@
       <p class="status" >{statusText}</p>
 
       {#each [...Object.entries(statusMap).entries()] as [index, [status, count]]}
-        <span class="status" on:click={() => statusOnClick(status)}>{count} {JOB_STATUS_TO_TITLE[status]}</span>
+        <span class="status" on:click={() => { showJobsDetailByStatus = status }}>{count} {JOB_STATUS_TO_TITLE[status]}</span>
         {#if (index != Object.keys(statusMap).length - 1 )}
           <span>,&nbsp;</span>
         {/if}
@@ -139,6 +139,7 @@
   </div>
   <div class="job-details">
     {#if showJobsDetailByStatus}
+      <p on:click={() => { showJobsDetailByStatus = null }}>Hide jobs</p>
       {#each workflowJobs.filter(job => job.conclusion == showJobsDetailByStatus) as job}
         <a href={job.html_url}>{job.name}</a>
       {/each}
@@ -154,7 +155,8 @@
         display: flex;
         justify-content: space-between;
           .info {
-            padding: 10px;
+            padding-top: 10px;
+            padding-bottom: 10px;
               .title {
                 display: block;
                 font-size: 1.15em;

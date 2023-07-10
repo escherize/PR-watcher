@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { Button, Toggle } from "carbon-components-svelte";
+  import { Button, CopyButton, Toggle } from "carbon-components-svelte";
 
   import { getGHApi, postGHApi } from "@/lib/api";
 
@@ -33,7 +33,6 @@
   let workflowJobs = [];
   let pullDetail = null;
   let statusMap = {};
-  let statusText = "";
   let watchIntervalHandler = null;
   let showJobsDetailByStatus = null; // "failure" | "sucecss" | etc
 
@@ -111,30 +110,38 @@
   <div class="info-and-title">
     <div class="info">
       <a class="title" href={pull.html_url}>{pull.title}</a>
-      <p class="status" >{statusText}</p>
-
       {#each [...Object.entries(statusMap).entries()] as [index, [status, count]]}
         <span class="status" on:click={() => onClickStatus(status)}>{count} {JOB_STATUS_TO_TITLE[status]}</span>
         {#if (index != Object.keys(statusMap).length - 1 )}
           <span>,&nbsp;</span>
         {/if}
       {/each}
-
     </div>
-
     <div class="actions">
-      <Toggle class="action-item"
-              bind:toggled={watch}
-              on:toggle={(e) => {
-              if (onToggleWatch) {
-              onToggleWatch(e.detail.toggled, pull.id);
-              watch = e.detail.toggled;
-              }}}
-              labelText="Watch" labelA="" labelB=""/>
-              <Button
-                class="action-item"
-                on:click={() => rerunFailedJobs(workflowJobs)}
-                disabled={!Object.keys(statusMap).some((status) => FAILED_STATUES.includes(status))}>Re-run failed jobs</Button>
+      {#if pullDetail}
+        <div class="action-item copy-branch">
+          <p>{pullDetail.head.ref}</p>
+          <div class="action-item">
+            <CopyButton text={pullDetail.head.ref}/>
+          </div>
+        </div>
+      {/if}
+      <div class="action-item">
+        <Toggle
+          bind:toggled={watch}
+          on:toggle={(e) => {
+          if (onToggleWatch) {
+          onToggleWatch(e.detail.toggled, pull.id);
+          watch = e.detail.toggled;
+          }}}
+          labelText="Watch" labelA="" labelB=""/>
+      </div>
+      <div class="action-item">
+        <Button
+          on:click={() => rerunFailedJobs(workflowJobs)}
+          disabled={!Object.keys(statusMap).some((status) => FAILED_STATUES.includes(status))}>Re-run failed jobs</Button>
+      </div>
+
     </div>
   </div>
   <div class="job-details">
@@ -176,9 +183,7 @@
                 color: #3d70b2;
                 cursor: pointer;
               }
-              .action-item {
-                padding-left: 10px;
-              }
+
           }
       }
       .job-details {
@@ -188,6 +193,16 @@
             line-height: 1.4em;
             text-decoration: none;
           }
+      }
+  }
+
+  .action-item {
+    margin-left: 10px;
+  }
+  .copy-branch {
+    display: flex;
+      button {
+        padding-left: 20px;
       }
   }
 </style>

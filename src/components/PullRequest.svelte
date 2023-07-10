@@ -1,6 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import { Button, CopyButton, Toggle } from "carbon-components-svelte";
+  import Reset from "carbon-icons-svelte/lib/Reset.svelte";
 
   import { getGHApi, postGHApi } from "@/lib/api";
 
@@ -126,6 +127,18 @@
           </div>
         </div>
       {/if}
+
+      <div class="action-item">
+        <Button iconDescription="Refresh" on:click={() => refreshJobs(workflowRuns)} icon={Reset}/>
+      </div>
+
+
+      <div class="action-item">
+        <Button
+          on:click={() => rerunFailedJobs(workflowJobs)}
+          disabled={!Object.keys(statusMap).some((status) => FAILED_STATUES.includes(status))}>Re-run failed jobs</Button>
+      </div>
+
       <div class="action-item">
         <Toggle
           bind:toggled={watch}
@@ -135,11 +148,6 @@
           watch = e.detail.toggled;
           }}}
           labelText="Watch" labelA="" labelB=""/>
-      </div>
-      <div class="action-item">
-        <Button
-          on:click={() => rerunFailedJobs(workflowJobs)}
-          disabled={!Object.keys(statusMap).some((status) => FAILED_STATUES.includes(status))}>Re-run failed jobs</Button>
       </div>
 
     </div>

@@ -74,6 +74,11 @@
     }
   }
 
+  function onClickStatus(status) {
+    if (showJobsDetailByStatus) showJobsDetailByStatus = null
+    else showJobsDetailByStatus = status
+  }
+
   onMount(() => {
     getGHApi(pull.pull_request.url)
       .then(resp => resp.json())
@@ -100,11 +105,6 @@
     }, watchInterval);
   }
 
-  function statusOnClick(status) {
-    console.log("CLICK STAUTS", status);
-
-  }
-
 </script>
 
 <div class="pull-request">
@@ -114,7 +114,7 @@
       <p class="status" >{statusText}</p>
 
       {#each [...Object.entries(statusMap).entries()] as [index, [status, count]]}
-        <span class="status" on:click={() => { showJobsDetailByStatus = status }}>{count} {JOB_STATUS_TO_TITLE[status]}</span>
+        <span class="status" on:click={() => onClickStatus(status)}>{count} {JOB_STATUS_TO_TITLE[status]}</span>
         {#if (index != Object.keys(statusMap).length - 1 )}
           <span>,&nbsp;</span>
         {/if}

@@ -73,12 +73,12 @@
 
     <div id="pull-requests">
       {#each pulls as pull (pull.id)}
-        {#if pull.pull_request.html_url == "https://github.com/metabase/metabase/pull/31540"}
+        <!--{#if pull.pull_request.html_url == "https://github.com/metabase/metabase/pull/31540"}-->
           <PullRequest repo={repoInputValue} pull={pull}
                        watch={Boolean(watchingPullIds[pull.id])}
                        watchInterval={watchInterval}
                        onToggleWatch={onToggleWatch}/>
-        {/if}
+                       <!--{/if}-->
       {/each}
     </div>
   </div>

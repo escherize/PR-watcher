@@ -37,24 +37,27 @@
   let watchIntervalHandler = null;
   let showJobsDetailByStatus = null; // "failure" | "sucecss" | etc
 
-  async function rerunFailedJob(runId) {
-    // This is a bit weird, to re-run a failed job, we just need to provide one run-id
-    // in that job, not the job_id itself
-    await postGHApi(`repos/${repo}/actions/runs/${runId}/rerun-failed-jobs`);
-    // update so that the status text reflect this
-    workflowJobs = workflowJobs.map(job => {
-      if (job.run_id == runId && FAILED_STATUES.includes(job.conclusion)) {
-        job.status = "queued";
-        job.conclusion = null;
-      }
-      return job;
-    });
+  async function rerunFailedRun(runId) {
+    postGHApi(`repos/${repo}/actions/runs/${runId}/rerun-failed-jobs`)
+      .then(resp => {
+        // update so that the status text reflect this
+        workflowJobs = workflowJobs.map(job => {
+          if (job.run_id == runId && FAILED_STATUES.includes(job.conclusion)) {
+            job.status = "queued";
+            job.conclusion = null;
+          }
+          return job
+        });
+        window.jobs = workflowJobs;
+      });
   }
 
   function rerunFailedJobs(jobs) {
     const failedJobs = jobs.filter(job => FAILED_STATUES.includes(job.conclusion));
+    // This is a bit weird, to re-run a failed job, we just need to provide one run-id
+    // in that job, not the job_id itself
     const failedRuns = new Set(failedJobs.map(job => job.run_id));
-    failedRuns.forEach(runId => rerunFailedJob(runId));
+    failedRuns.forEach(runId => rerunFailedRun(runId));
   }
 
   function refreshJobs(runs) {
@@ -65,17 +68,22 @@
           .then(data => data.jobs);
       })).then(values => {
         workflowJobs = values.flat(1)
-        return workflowJobs})
-        .then(jobs => {
-          statusMap = jobs.map(job => job.conclusion).reduce(function (acc, curr) {
-            return acc[curr] ? ++acc[curr] : acc[curr] = 1, acc
-          }, {});
-        });
+        return workflowJobs});
     }
   }
 
+  function refreshRuns(pullDetail) {
+    getGHApi(`repos/${repo}/actions/runs`, {event: "pull_request", branch: pullDetail.head.ref, head_sha: pullDetail.head.sha})
+      .then(resp => resp.json())
+      .then(data => {
+        workflowRuns = data.workflow_runs
+        return workflowRuns
+      })
+      .then(runs => refreshJobs(runs));
+  }
+
   function onClickStatus(status) {
-    if (showJobsDetailByStatus) showJobsDetailByStatus = null
+    if (showJobsDetailByStatus == status) showJobsDetailByStatus = null
     else showJobsDetailByStatus = status
   }
 
@@ -88,13 +96,7 @@
       })
       .then(pullDetail => {
         // fetch the workflow runs then refresh jobs
-        getGHApi(`repos/${repo}/actions/runs`, {event: "pull_request", branch: pullDetail.head.ref})
-          .then(resp => resp.json())
-          .then(data => {
-            workflowRuns = data.workflow_runs
-            return workflowRuns
-          })
-          .then(runs => refreshJobs(runs));
+        refreshRuns(pullDetail);
       });
   })
 
@@ -105,12 +107,17 @@
     }, watchInterval);
   }
 
+  $ : {
+    statusMap = workflowJobs.map(job => job.conclusion).reduce(function (acc, curr) {
+      return acc[curr] ? ++acc[curr] : acc[curr] = 1, acc
+    }, {});}
+
 </script>
 
 <div class="pull-request">
   <div class="info-and-title">
     <div class="info">
-      <a class="title" href={pull.html_url}>{pull.title}</a>
+      <a class="title" href={pull.html_url}>{pull.title} #{pull.number}</a>
       {#each [...Object.entries(statusMap).entries()] as [index, [status, count]]}
         <span class="status" on:click={() => onClickStatus(status)}>{count} {JOB_STATUS_TO_TITLE[status]}</span>
         {#if (index != Object.keys(statusMap).length - 1 )}

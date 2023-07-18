@@ -3,7 +3,7 @@ Are you tired of babysittings multiple PRs and the CI keeps flaking? I have a so
 This is a dashboard that can help you:
 - View all active PRs in a single view
 - Re-run failed jobs
-- Refresh the status of PRs
+- Watch the status of PRs
 
 ![](./statics/screenshots.png)
 

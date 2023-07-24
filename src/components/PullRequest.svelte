@@ -72,8 +72,8 @@
     }
   }
 
-  function refreshRuns(pullDetail) {
-    getGHApi(`repos/${repo}/actions/runs`, {event: "pull_request", branch: pullDetail.head.ref, head_sha: pullDetail.head.sha})
+  function refreshRuns(pull) {
+    getGHApi(`repos/${repo}/actions/runs`, {event: "pull_request", branch: pull.head.ref, head_sha: pull.head.sha})
       .then(resp => resp.json())
       .then(data => {
         workflowRuns = data.workflow_runs
@@ -136,7 +136,7 @@
       {/if}
 
       <div class="action-item">
-        <Button iconDescription="Refresh" on:click={() => refreshJobs(workflowRuns)} icon={Reset}/>
+        <Button iconDescription="Refresh" on:click={() => refreshRuns(pullDetail)} icon={Reset}/>
       </div>
 
 

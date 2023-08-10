@@ -82,13 +82,9 @@
       .then(runs => refreshJobs(runs));
   }
 
-  function onClickStatus(status) {
-    if (showJobsDetailByStatus == status) showJobsDetailByStatus = null
-    else showJobsDetailByStatus = status
-  }
 
-  onMount(() => {
-    getGHApi(pull.pull_request.url)
+  function refreshPullDetail(pull_request_url) {
+    getGHApi(pull_request_url)
       .then(resp => resp.json())
       .then(data => {
         pullDetail = data
@@ -98,6 +94,16 @@
         // fetch the workflow runs then refresh jobs
         refreshRuns(pullDetail);
       });
+  }
+
+  function onClickStatus(status) {
+    if (showJobsDetailByStatus == status) showJobsDetailByStatus = null
+    else showJobsDetailByStatus = status
+  }
+
+
+  onMount(() => {
+    refreshPullDetail(pull.pull_request.url);
   })
 
   $: if (watch && watchInterval) {
@@ -136,7 +142,7 @@
       {/if}
 
       <div class="action-item">
-        <Button iconDescription="Refresh" on:click={() => refreshRuns(pullDetail)} icon={Reset}/>
+        <Button iconDescription="Refresh" on:click={() => refreshPullDetail(pull.pull_request.url)} icon={Reset}/>
       </div>
 
 

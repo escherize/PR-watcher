@@ -5,7 +5,7 @@ This is a dashboard that can help you:
 - Re-run failed jobs
 - Watch the status of PRs
 
-![](./statics/screenshots.png)
+![](./statics/screenshot.png)
 
 # How to use
 - Download the single HTML file from the release page

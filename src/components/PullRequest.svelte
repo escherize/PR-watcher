@@ -188,7 +188,6 @@
               .title {
                 display: block;
                 font-size: 1.15em;
-                color: #78a9ff;
                 margin-bottom: 5px;
                 text-decoration: none;
               }
@@ -200,7 +199,6 @@
             display: flex;
             align-items: center;
               p {
-                color: #78a9ff;
                 cursor: pointer;
               }
 

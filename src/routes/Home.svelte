@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { Button, Dropdown, TextInput, LocalStorage } from "carbon-components-svelte";
+  import { Button, Dropdown, TextInput, Toggle, LocalStorage } from "carbon-components-svelte";
 
   import PullRequest from "@/components/PullRequest.svelte";
   import Layout from "@/components/Layout.svelte";
@@ -47,9 +47,9 @@
 
 <LocalStorage key="repo-input-value" bind:value={repoInputValue} />
 <LocalStorage key="search-query" bind:value={searchQuery} />
-<!--<LocalStorage key="watching-pull-ids" bind:value={watchingPullIds} />-->
 
 <Layout>
+
   <Dropdown
     titleText="Watch PR internval"
     selectedId="2"

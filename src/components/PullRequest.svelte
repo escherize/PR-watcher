@@ -188,20 +188,19 @@
               .title {
                 display: block;
                 font-size: 1.15em;
-                color: #3d70b2;
+                color: #78a9ff;
                 margin-bottom: 5px;
                 text-decoration: none;
               }
               .status  {
                 font-size: 0.95em;
-                color: #586069;
               }
           }
           .actions {
             display: flex;
             align-items: center;
               p {
-                color: #3d70b2;
+                color: #78a9ff;
                 cursor: pointer;
               }
 

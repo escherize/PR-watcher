@@ -2,7 +2,6 @@
   import { onMount } from 'svelte';
   import { path, prefs } from 'svelte-pathfinder';
   import { Modal, TextInput } from "carbon-components-svelte";
-  import "carbon-components-svelte/css/g90.css";
 
   import routes from '@/routes';
   import { tokenStore, userStore } from "@/stores/auth";

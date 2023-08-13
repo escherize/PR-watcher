@@ -11,7 +11,6 @@ export default defineConfig({
     svelte(),
     viteSingleFile({
       removeViteModuleLoader: true,
-      useRecommendedBuildConfig: true,
     }),
   ],
   resolve: {

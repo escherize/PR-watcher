@@ -8,13 +8,14 @@
   import { getGHApi } from "@/lib/api";
 
   let repoInputValue = "";
+  let searchQuery = `state:open author:${$userStore.login}`;
   let pulls = [];
   let watchingPullIds = {};
   let watchInterval = 10000;
 
   function loadPullRequests() {
     getGHApi("search/issues",
-      {q: `author:${$userStore.login} type:pr repo:${repoInputValue} state:open`})
+      {q: `${searchQuery} repo:${repoInputValue} type:pr`})
       .then(resp => resp.json())
       .then(data => pulls = data.items);
   }
@@ -45,6 +46,7 @@
 </script>
 
 <LocalStorage key="repo-input-value" bind:value={repoInputValue} />
+<LocalStorage key="search-query" bind:value={searchQuery} />
 <!--<LocalStorage key="watching-pull-ids" bind:value={watchingPullIds} />-->
 
 <Layout>
@@ -66,6 +68,10 @@
       labelText="Repo"
       placeholder="metabase/metabase"
       bind:value={repoInputValue}/>
+
+    <TextInput
+      labelText="Search query"
+      bind:value={searchQuery}/>
 
     <Button on:click={loadPullRequests}>
       Load

@@ -109,7 +109,7 @@
   $: if (watch && watchInterval) {
     if (watchIntervalHandler) clearInterval(watchIntervalHandler);
     watchIntervalHandler = setInterval(() => {
-      refreshJobs(workflowRuns);
+      refreshPullDetail(pull.pull_request.url);
     }, watchInterval);
   }
 

@@ -6,7 +6,7 @@
   import Layout from "@/components/Layout.svelte";
   import { userStore } from "@/stores/auth";
   import { getGHApi } from "@/lib/api";
-  import { parseUrlParams } from "@/lib/utils";
+  import { parseUrlParams, updateUrlParams } from "@/lib/utils";
 
   let repoInputValue = "";
   let searchQuery = `state:open author:${$userStore.login}`;
@@ -75,7 +75,9 @@
     selectedId="2"
     itemToString={itemToStringWatchDropdown}
     on:select={(e => {
-    watchInterval = parseInt(e.detail.selectedItem.text)})}
+    watchInterval = parseInt(e.detail.selectedItem.text);
+    updateUrlParams({interval: watchInterval.toString()});
+    })}
     items={[
     {id: "0", text: "30000"},
     {id: "1", text: "60000"},
@@ -87,11 +89,13 @@
     <TextInput
       labelText="Repo"
       placeholder="metabase/metabase"
-      bind:value={repoInputValue}/>
+      bind:value={repoInputValue}
+      on:blur={() => updateUrlParams({repo: repoInputValue})}/>
 
     <TextInput
       labelText="Search query"
-      bind:value={searchQuery}/>
+      bind:value={searchQuery}
+      on:blur={() => updateUrlParams({query: searchQuery})}/>
 
     <Button on:click={loadPullRequests}>
       Load

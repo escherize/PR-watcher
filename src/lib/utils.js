@@ -19,3 +19,18 @@ export function parseUrlParams() {
     interval: params.get('interval')
   };
 }
+
+export function updateUrlParams(updates) {
+  const url = new URL(window.location);
+  const params = url.searchParams;
+  
+  Object.entries(updates).forEach(([key, value]) => {
+    if (value && value.trim() !== '') {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+  });
+  
+  window.history.replaceState({}, '', url);
+}

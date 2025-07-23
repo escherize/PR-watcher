@@ -6,6 +6,7 @@
   import Layout from "@/components/Layout.svelte";
   import { userStore } from "@/stores/auth";
   import { getGHApi } from "@/lib/api";
+  import { parseUrlParams } from "@/lib/utils";
 
   let repoInputValue = "";
   let searchQuery = `state:open author:${$userStore.login}`;
@@ -40,7 +41,26 @@
   }
 
   onMount(() => {
-    if (repoInputValue) loadPullRequests();
+    const urlParams = parseUrlParams();
+    
+    if (urlParams.repo) {
+      repoInputValue = urlParams.repo;
+    }
+    
+    if (urlParams.query) {
+      searchQuery = urlParams.query;
+    }
+    
+    if (urlParams.interval) {
+      const intervalValue = parseInt(urlParams.interval);
+      if (!isNaN(intervalValue)) {
+        watchInterval = intervalValue;
+      }
+    }
+    
+    if (repoInputValue) {
+      loadPullRequests();
+    }
   })
 
 </script>

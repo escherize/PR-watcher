@@ -10,3 +10,12 @@ export function groupBy(xs, key) {
     return rv;
   }, {});
 }
+
+export function parseUrlParams() {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    repo: params.get('repo'),
+    query: params.get('query'),
+    interval: params.get('interval')
+  };
+}

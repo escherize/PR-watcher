@@ -13,12 +13,30 @@
   let pulls = [];
   let watchingPullIds = {};
   let watchInterval = 10000;
+  let isInitialized = false;
+
+  // Reactive URL syncing
+  $: if (isInitialized) {
+    updateUrlParams({
+      repo: repoInputValue,
+      query: searchQuery,
+      interval: watchInterval.toString()
+    });
+  }
 
   function loadPullRequests() {
+    if (!repoInputValue.trim()) {
+      console.error("Repository name is required");
+      return;
+    }
     getGHApi("search/issues",
       {q: `${searchQuery} repo:${repoInputValue} type:pr`})
       .then(resp => resp.json())
-      .then(data => pulls = data.items);
+      .then(data => pulls = data.items || [])
+      .catch(err => {
+        console.error("Failed to load pull requests:", err);
+        pulls = [];
+      });
   }
 
   function onToggleWatch(value, pullId) {
@@ -61,6 +79,8 @@
     if (repoInputValue) {
       loadPullRequests();
     }
+    
+    isInitialized = true;
   })
 
 </script>
@@ -76,7 +96,6 @@
     itemToString={itemToStringWatchDropdown}
     on:select={(e => {
     watchInterval = parseInt(e.detail.selectedItem.text);
-    updateUrlParams({interval: watchInterval.toString()});
     })}
     items={[
     {id: "0", text: "30000"},
@@ -89,13 +108,11 @@
     <TextInput
       labelText="Repo"
       placeholder="metabase/metabase"
-      bind:value={repoInputValue}
-      on:blur={() => updateUrlParams({repo: repoInputValue})}/>
+      bind:value={repoInputValue}/>
 
     <TextInput
       labelText="Search query"
-      bind:value={searchQuery}
-      on:blur={() => updateUrlParams({query: searchQuery})}/>
+      bind:value={searchQuery}/>
 
     <Button on:click={loadPullRequests}>
       Load
